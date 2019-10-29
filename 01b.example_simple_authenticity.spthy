@@ -1,0 +1,42 @@
+theory simple_authenticity
+
+begin
+
+builtins: asymmetric-encryption
+
+/* 
+We formalize the following protocol:
+
+1. A -> B: {A,na}sk(A) 
+*/
+
+// Public key infrastructure
+rule Register_pk:
+  [ Fr(~ltkX) ]
+-->
+  [ !Ltk($X, ~ltkX), !Pk($X, pk(~ltkX)), Out(pk(~ltkX))]
+
+
+// Role A sends first message
+rule A_1_send:
+  [ Fr(~na), !Ltk($A, ltkA) ]
+--[ Send($A, aenc(<$A, ~na>, ltkA)) ]->
+  [ St_A_1($A, ltkA, $B, ~na), Out( aenc(<$A, ~na>, ltkA) )]
+
+// Role B receives first message
+rule B_1_receive:
+  let m = aenc(<$A, na>, ltkA)
+  in
+  [ !Pk($A, pk(ltkA)), In(m)]
+--[ Recv($B, m), Authentic($A, m) ]->
+  [ St_B_1($B, $A, na)]
+
+lemma executable:
+exists-trace
+  "Ex A B m #i #j. Send(A,m)@i & Recv(B,m) @j"
+
+lemma message_authentication:
+  "All b m #i.
+    Authentic(b,m) @i==> (Ex #j. Send(b,m) @j & j<i)"
+
+end

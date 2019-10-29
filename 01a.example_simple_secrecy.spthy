@@ -1,0 +1,48 @@
+theory simple_secrecy
+
+begin
+
+builtins: asymmetric-encryption
+
+/* 
+We formalize the following protocol:
+
+1. A -> B: {A,na}pk(B)
+*/
+
+// Public key infrastructure
+rule Register_pk:
+  [ Fr(~ltkX) ]
+-->
+  [ !Ltk($X, ~ltkX), !Pk($X, pk(~ltkX)), Out(pk(~ltkX))]
+
+
+// Role A sends first message
+rule A_1_send:
+  [ Fr(~na), !Pk($B, pkB)]
+--[ Send($A, aenc(<$A, ~na>, pkB)), Secret(~na), Role('A')]->
+  [ St_A_1($A, pkB, $B, ~na), Out( aenc(<$A, ~na>, pkB) )]
+
+// Role B receives first message
+rule B_1_receive:
+  let m = aenc(<$A, na>, pkB)
+  in
+  [ !Ltk($B, ltkB), In(m)]
+--[ Recv($B, aenc(<$A, na>, pk(ltkB))), Secret(na), Role('B')]->
+  [ St_B_1($B, ltkB, $A, na)]
+
+lemma executable:
+exists-trace
+  "Ex A B m #i #j. Send(A,m)@i & Recv(B,m) @j"
+
+lemma secret_A:
+all-traces
+  "All n #i. 
+    Secret(n) @i & Role('A') @i ==> (not (Ex #j. K(n)@j))"
+
+lemma secret_B:
+all-traces
+  "All n #i. 
+    Secret(n) @i & Role('B') @i ==> (not (Ex #j. K(n)@j))"
+
+end
