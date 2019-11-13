@@ -35,8 +35,7 @@ Using a container
 
 You might want to install Tamarin inside a container to keep your main system clean.
 
-Install and configure LXC as described `here <See https://linuxcontainers.org/lxd/getting-started-cli/>`_. 
-Then create a clean Ubuntu 18.04 container::
+First ensure LXC_ is installed and configured, then create a clean Ubuntu 18.04 container with a single user::
 
     lxc launch images:ubuntu/18.04 tamarin
     lxc exec tamarin -- useradd -m -s /bin/bash -G sudo -p "" user
@@ -44,4 +43,6 @@ Then create a clean Ubuntu 18.04 container::
 And enter it::
 
     lxc exec tamarin -- su -l user -c bash
-    
+
+
+.. _LXC: https://linuxcontainers.org/lxd/getting-started-cli/
